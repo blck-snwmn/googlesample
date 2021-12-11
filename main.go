@@ -11,6 +11,9 @@ import (
 	"net/http"
 
 	"golang.org/x/oauth2"
+
+	"google.golang.org/api/calendar/v3"
+	"google.golang.org/api/option"
 )
 
 //go:embed client.json
@@ -77,7 +80,7 @@ func main() {
 		ClientSecret: ci.ClientSecret,
 		RedirectURL:  ci.RedirectUris[0],
 		Scopes: []string{
-			"https://www.googleapis.com/auth/youtube.readonly",
+			calendar.CalendarReadonlyScope,
 		},
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  ci.AuthURI,
@@ -111,4 +114,24 @@ func main() {
 	fmt.Printf("TokenType=%+v\n", token.TokenType)
 	fmt.Printf("RefreshToken=%+v\n", token.RefreshToken)
 	fmt.Printf("Expiry=%+v\n", token.Expiry)
+	{
+		option := option.WithHTTPClient(conf.Client(context.Background(), token))
+		service, err := calendar.NewService(context.Background(), option)
+		if err != nil {
+			panic(err)
+		}
+		events, err := service.Events.List("primary").
+			MaxResults(10).
+			Do()
+		if err != nil {
+			panic(err)
+		}
+		for _, e := range events.Items {
+			fmt.Printf("DateTime=%s, Summary=%s, Description=%s\n",
+				e.Start.DateTime,
+				e.Summary,
+				e.Description,
+			)
+		}
+	}
 }
