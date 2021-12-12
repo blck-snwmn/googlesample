@@ -114,6 +114,8 @@ func main() {
 	fmt.Printf("TokenType=%+v\n", token.TokenType)
 	fmt.Printf("RefreshToken=%+v\n", token.RefreshToken)
 	fmt.Printf("Expiry=%+v\n", token.Expiry)
+
+	// 以下アクセストークンを使った処理
 	{
 		option := option.WithHTTPClient(conf.Client(context.Background(), token))
 		service, err := calendar.NewService(context.Background(), option)
